@@ -1,6 +1,4 @@
 
-
-import time
 import smtplib
 from email.mime.text import MIMEText
 from datetime import datetime
@@ -9,7 +7,7 @@ from playwright_stealth import Stealth
 from dotenv import load_dotenv
 import os
 import logging
-import random
+
 
 # ====================== PODESAVANJA ======================
 
