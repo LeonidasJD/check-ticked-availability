@@ -28,9 +28,6 @@ RECEIVER_EMAIL = os.getenv("RECEIVER_EMAIL")
 SMTP_SERVER = "smtp.gmail.com"
 SMTP_PORT = 587
 
-#  MINIMUM I MAXIMUM intervala izmedju provera dostupnosti karte
-CHECK_INTERVAL_MIN = 10 * 60  # 10 min
-CHECK_INTERVAL_MAX = 35 * 60  # 35 min
 
 # ===========================================================
 
@@ -147,48 +144,58 @@ def run_watcher():
             user_data_dir="./chrome_profile",
             headless=False
         )
+
         print("Browser launched")
+
         stealth = Stealth()
         page = context.new_page()
         stealth.apply_stealth_sync(page)
 
-        
+        print(
+            f"[{datetime.now()}] Pokrecem watcher za datum: "
+            f"{TARGET_DATE_TEXT} {TARGET_MONTH_YEAR}"
+        )
 
-        print(f"[{datetime.now()}] Pokrecem watcher za datum:  {TARGET_DATE_TEXT} {TARGET_MONTH_YEAR}")
+        try:
+            page.goto(URL, timeout=60000)
 
-        while True:
-            try:
-                page.goto(URL, timeout=60000)
+            # Sacekaj anti-bot proveru
+            page.wait_for_timeout(5000)
+            page.wait_for_load_state("networkidle", timeout=30000)
 
-                # Sacekaj da prodje anti-bot "Checking your browser..." provera
-                page.wait_for_timeout(5000)
-                page.wait_for_load_state("networkidle", timeout=30000)
-                
-                available = check_availability(page)
-                
-                check_tickets_log(available)
+            available = check_availability(page)
 
-                
-                print("Page loaded")
+            check_tickets_log(available)
 
-                if available:
-                    print(f"[{datetime.now()}] DOSTUPNO! Saljem email...")
-                    send_email_alert(
-                        f"Karte za {TARGET_DATE_TEXT} {TARGET_MONTH_YEAR} su dostupne na sajtu!\n\n{URL}\n\n"
-                        f"Pozuri da kupis!"
-                    )
-                    break  # prekini nakon uspesnog alarma (ili ukloni break da nastavi da proverava)
-                else:
-                    print(f"[{datetime.now()}] Jos uvek nedostupno. Cekam...")
+            print("Page loaded")
 
-            except Exception as e:
-                print(f"[{datetime.now()}] Greska prilikom provere: {e}")
-                logging.exception(f"Greska prilikom provere: {e}")
+            if available:
+                print(f"[{datetime.now()}] DOSTUPNO! Saljem email...")
 
-            sleep_time = random.uniform(CHECK_INTERVAL_MIN, CHECK_INTERVAL_MAX)
-            time.sleep(sleep_time)
+                send_email_alert(
+                    f"Karte za {TARGET_DATE_TEXT} {TARGET_MONTH_YEAR} "
+                    f"su dostupne na sajtu!\n\n{URL}\n\n"
+                    f"Pozuri da kupis!"
+                )
 
-        context.close()
+            else:
+                print(
+                    f"[{datetime.now()}] "
+                    f"Jos uvek nedostupno."
+                )
+
+        except Exception as e:
+            print(
+                f"[{datetime.now()}] "
+                f"Greska prilikom provere: {e}"
+            )
+
+            logging.exception(
+                f"Greska prilikom provere: {e}"
+            )
+
+        finally:
+            context.close()
 
 
 if __name__ == "__main__":
