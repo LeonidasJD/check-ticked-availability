@@ -1,9 +1,10 @@
 name: Colosseum Watcher
 
 on:
-  
+  workflow_dispatch:
+
   schedule:
-  - cron: '7,22,37,52 * * * *'
+    - cron: '*/1 * * * *'
 
 jobs:
   test-runner:
