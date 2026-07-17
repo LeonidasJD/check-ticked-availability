@@ -141,8 +141,7 @@ def run_watcher():
     with sync_playwright() as p:
         context = p.chromium.launch_persistent_context(
             user_data_dir="./chrome_profile",
-            headless=False,
-            channel="chrome",
+            headless=False
         )
         stealth = Stealth()
         page = context.new_page()
@@ -157,7 +156,7 @@ def run_watcher():
                 # Sacekaj da prodje anti-bot "Checking your browser..." provera
                 page.wait_for_timeout(5000)
                 page.wait_for_load_state("networkidle", timeout=30000)
-
+                
                 available = check_availability(page)
                 
                 check_tickets_log(available)
