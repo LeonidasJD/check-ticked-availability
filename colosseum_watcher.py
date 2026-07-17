@@ -44,6 +44,8 @@ logging.basicConfig(
 
 # ========================Funkcija koja salje email========================
 
+
+
 def send_email_alert(message: str):
     msg = MIMEText(message)
     msg["Subject"] = "🎟️ Colosseum karte DOSTUPNE!"
@@ -137,15 +139,20 @@ def check_availability(page) -> bool:
     return False
 
 # ========================Funkcija koja pokrece watcher========================
+
+print("Watcher started")
 def run_watcher():
     with sync_playwright() as p:
         context = p.chromium.launch_persistent_context(
             user_data_dir="./chrome_profile",
             headless=False
         )
+        print("Browser launched")
         stealth = Stealth()
         page = context.new_page()
         stealth.apply_stealth_sync(page)
+
+        
 
         print(f"[{datetime.now()}] Pokrecem watcher za datum:  {TARGET_DATE_TEXT} {TARGET_MONTH_YEAR}")
 
@@ -161,6 +168,8 @@ def run_watcher():
                 
                 check_tickets_log(available)
 
+                
+                print("Page loaded")
 
                 if available:
                     print(f"[{datetime.now()}] DOSTUPNO! Saljem email...")
