@@ -27,6 +27,11 @@ jobs:
         run: |
           playwright install chromium
 
+      - name: Install Xvfb
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb
+
       - name: Test Python
         run: |
           python --version
