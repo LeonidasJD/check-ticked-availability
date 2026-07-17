@@ -171,7 +171,7 @@ def run_watcher():
                 
                 print("Page loaded")
 
-                if available:
+                if not available:
                     print(f"[{datetime.now()}] DOSTUPNO! Saljem email...")
                     send_email_alert(
                         f"Karte za {TARGET_DATE_TEXT} {TARGET_MONTH_YEAR} su dostupne na sajtu!\n\n{URL}\n\n"
