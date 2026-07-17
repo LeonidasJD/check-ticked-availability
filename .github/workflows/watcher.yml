@@ -3,10 +3,14 @@ name: Colosseum Watcher
 on:
   workflow_dispatch:
 
+  schedule:
+    - cron: '*/15 * * * *'
+
 jobs:
   test-runner:
 
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     steps:
 
@@ -38,4 +42,4 @@ jobs:
           SENDER_KEY: ${{ secrets.SENDER_KEY }}
           RECEIVER_EMAIL: ${{ secrets.RECEIVER_EMAIL }}
         run: |
-          xvfb-run python colosseum_watcher.py
+          xvfb-run python -u colosseum_watcher.py
