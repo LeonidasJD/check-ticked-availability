@@ -15,16 +15,11 @@ import random
 
 URL = "https://ticketing.colosseo.it/en/eventi/full-experience-sotterranei-e-arena/"
 
-# Datum koji te zanima - broj dana kako se prikazuje u kalendaru (npr. "20")
+
 TARGET_DATE_TEXT = "20"
 
-# Mesec i godina kako se prikazuju u naslovu kalendara (ui-datepicker-title),
-# npr. "August 2026". Mora tacno da odgovara tekstu koji sajt prikazuje
-# (proveri otvaranjem kalendara i gledanjem naslova iznad dana).
 TARGET_MONTH_YEAR = "August 2026"
 
-
-# Email podesavanja (Gmail primer)
 load_dotenv()
 SENDER_EMAIL = os.getenv("SENDER_EMAIL")
 SENDER_APP_PASSWORD = os.getenv("SENDER_KEY") 
@@ -64,24 +59,7 @@ def send_email_alert(message: str):
 
 # ========================Funkcija koja cita mesec i godinu iz kalendara========================
 def get_calendar_month_year(page):
-    """
-    Cita mesec i godinu ODVOJENO iz njihovih spanova
-    (.ui-datepicker-month i .ui-datepicker-year), umesto da cita ceo
-    .ui-datepicker-title odjednom.
-
-    RAZLOG: HTML izgleda ovako:
-        <div class="ui-datepicker-title">
-            <span class="ui-datepicker-month">August</span>&nbsp;<span class="ui-datepicker-year">2026</span>
-        </div>
-    Izmedju spanova je &nbsp; (non-breaking space, karakter '\xa0'), NE
-    obican razmak (' '). Kad se cita ceo div.inner_text(), dobija se
-    string koji IZGLEDA kao "August 2026" ali sadrzi '\xa0' umesto
-    obicnog razmaka, pa poredjenje sa "August 2026" (obican razmak)
-    NIKAD ne uspeva.
-
-    Vraca string u formatu "August 2026" (sa OBICNIM razmakom), ili None
-    ako spanovi nisu pronadjeni.
-    """
+    
     month_locator = page.locator(".ui-datepicker-month").first
     year_locator = page.locator(".ui-datepicker-year").first
 
@@ -98,10 +76,7 @@ def get_calendar_month_year(page):
 
 
 def navigate_to_month(page, target_month_year: str, max_clicks: int = 24):
-    """
-    Klika na 'sledeci mesec' strelicu (.ui-datepicker-next) dok naslov
-    kalendara ne postane jednak target_month_year.
-    """
+ 
     for _ in range(max_clicks):
         current_title = get_calendar_month_year(page)
         if current_title is None:
@@ -132,14 +107,7 @@ def check_tickets_log(tickets_available: bool):
 
 # ========================Provera dostupnosti========================
 def check_availability(page) -> bool:
-    """
-    Vraca True ako je TARGET_DATE_TEXT dostupan za klik (nije disabled).
-
-    Logika (jQuery UI Datepicker):
-    - <td class="... ui-state-disabled ..."><span>20</span></td>  -> NEDOSTUPNO
-      (bilo closing_day ili soldout_day, oba imaju klasu ui-state-disabled)
-    - <td><a ...>20</a></td>  (bez ui-state-disabled klase)         -> DOSTUPNO
-    """
+    
     if not navigate_to_month(page, TARGET_MONTH_YEAR):
         print(f"[{datetime.now()}] Upozorenje: nisam mogao da pronadjem mesec '{TARGET_MONTH_YEAR}' u kalendaru.")
         return False
