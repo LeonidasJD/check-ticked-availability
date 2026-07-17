@@ -33,5 +33,9 @@ jobs:
           sudo apt-get install -y xvfb
 
       - name: Run watcher
+        env:
+          SENDER_EMAIL: ${{ secrets.SENDER_EMAIL }}
+          SENDER_KEY: ${{ secrets.SENDER_KEY }}
+          RECEIVER_EMAIL: ${{ secrets.RECEIVER_EMAIL }}
         run: |
           xvfb-run python colosseum_watcher.py
