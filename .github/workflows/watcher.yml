@@ -2,8 +2,7 @@ name: Colosseum Watcher
 
 on:
   workflow_dispatch:
-  repository_dispatch:
-    types: [run-watcher]
+  
 
 jobs:
   test-runner:
