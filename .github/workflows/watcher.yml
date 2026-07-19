@@ -41,3 +41,12 @@ jobs:
           RECEIVER_EMAIL: ${{ secrets.RECEIVER_EMAIL }}
         run: |
           xvfb-run python -u colosseum_watcher.py
+
+      - name: Upload debug snapshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: debug-snapshot-${{ github.run_number }}
+          path: debug_artifacts/
+          retention-days: 7
+          if-no-files-found: ignore    

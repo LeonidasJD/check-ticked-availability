@@ -99,8 +99,35 @@ def check_tickets_log(tickets_available: bool):
         logging.info("Karte su dostupne na sajtu")
             
     else:logging.info("Karte nisu dostupne na sajtu")
-            
-    
+                
+#=========================Save snapshots========================
+
+def save_debug_snapshot(page, reason: str):
+   
+    os.makedirs("debug_artifacts", exist_ok=True)
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+ 
+    screenshot_path = f"debug_artifacts/fail_{timestamp}.png"
+    html_path = f"debug_artifacts/fail_{timestamp}.html"
+ 
+    try:
+        page.screenshot(path=screenshot_path, full_page=True)
+    except Exception as e:
+        logging.error(f"Nisam mogao da snimim screenshot: {e}")
+ 
+    try:
+        with open(html_path, "w", encoding="utf-8") as f:
+            f.write(page.content())
+    except Exception as e:
+        logging.error(f"Nisam mogao da snimim HTML: {e}")
+ 
+    try:
+        current_url = page.url
+    except Exception:
+        current_url = "nepoznato"
+ 
+    logging.error(f"DEBUG SNAPSHOT ({reason}): {screenshot_path}, {html_path}, url={current_url}")
+    print(f"[{datetime.now()}] Snimljen debug snapshot ({reason}): {screenshot_path}, url={current_url}")
 
 # ========================Provera dostupnosti========================
 def check_availability(page) -> bool:
@@ -131,6 +158,7 @@ def check_availability(page) -> bool:
                 return True
 
     print(f"[{datetime.now()}] Nisam pronasao dan '{TARGET_DATE_TEXT}' u prikazanom mesecu.")
+    save_debug_snapshot(page, "date_cell_not_found")
     return False
 
 # ========================Funkcija koja pokrece watcher========================
