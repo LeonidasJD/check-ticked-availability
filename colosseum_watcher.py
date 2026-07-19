@@ -189,6 +189,11 @@ def run_watcher():
             page.wait_for_timeout(5000)
             page.wait_for_load_state("networkidle", timeout=30000)
 
+            status_code = page.response.status if page.response else None
+            if status_code is not None and status_code >= 400:
+                print(f"[{datetime.now()}] UPOZORENJE: HTTP status {status_code} pri ulasku na sajt.")
+                save_debug_snapshot(page, f"http_status_{status_code}")
+
             available = check_availability(page)
 
             check_tickets_log(available)
