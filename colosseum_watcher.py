@@ -1,4 +1,3 @@
-
 import smtplib
 from email.mime.text import MIMEText
 from datetime import datetime
@@ -134,6 +133,7 @@ def check_availability(page) -> bool:
     
     if not navigate_to_month(page, TARGET_MONTH_YEAR):
         print(f"[{datetime.now()}] Upozorenje: nisam mogao da pronadjem mesec '{TARGET_MONTH_YEAR}' u kalendaru.")
+        save_debug_snapshot(page, "navigate_to_month_failed")
         return False
 
     cells = page.locator("td:has(span), td:has(a)")
@@ -183,16 +183,36 @@ def run_watcher():
         )
 
         try:
-            page.goto(URL, timeout=60000)
+            # response se dobija kao POVRATNA VREDNOST page.goto() poziva -
+            # Page objekat NEMA atribut .response, zato se cuva ovde.
+            response = page.goto(URL, timeout=60000)
 
             # Sacekaj anti-bot proveru
             page.wait_for_timeout(5000)
             page.wait_for_load_state("networkidle", timeout=30000)
 
-            status_code = page.response.status if page.response else None
+            # ---- PROVERA DA LI JE SAJT SPRECIO ULAZAK ----
+            status_code = response.status if response else None
             if status_code is not None and status_code >= 400:
                 print(f"[{datetime.now()}] UPOZORENJE: HTTP status {status_code} pri ulasku na sajt.")
                 save_debug_snapshot(page, f"http_status_{status_code}")
+
+            page_text_lower = page.content().lower()
+            block_indicators = [
+                "access denied",
+                "attention required",
+                "captcha",
+                "checking your browser",
+                "just a moment",
+                "cloudflare",
+                "blocked",
+                "unusual traffic",
+            ]
+            matched_indicators = [ind for ind in block_indicators if ind in page_text_lower]
+            if matched_indicators:
+                print(f"[{datetime.now()}] UPOZORENJE: moguca blokada/anti-bot stranica. Pronadjeno: {matched_indicators}")
+                save_debug_snapshot(page, f"possible_block_{'_'.join(matched_indicators)}")
+            # ---- KRAJ PROVERE BLOKADE ----
 
             available = check_availability(page)
 
@@ -224,6 +244,11 @@ def run_watcher():
             logging.exception(
                 f"Greska prilikom provere: {e}"
             )
+
+            try:
+                save_debug_snapshot(page, "exception")
+            except Exception:
+                pass
 
         finally:
             context.close()

@@ -15,3 +15,6 @@ colosseum_watcher.log
 
 # Chrome profile
 chrome_profile/
+
+# Debug artifacts
+debug_artifacts/
